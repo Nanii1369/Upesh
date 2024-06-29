@@ -1,0 +1,87 @@
+import json
+import os
+
+# File to store tasks
+TASKS_FILE = 'tasks.json'
+
+class Task:
+    def _init_(self, description, priority='medium', completed=False):
+        self.description = description
+        self.priority = priority
+        self.completed = completed
+
+    def to_dict(self):
+        return {
+            'description': self.description,
+            'priority': self.priority,
+            'completed': self.completed
+        }
+
+    @staticmethod
+    def from_dict(data):
+        return Task(data['description'], data['priority'], data['completed'])
+
+def load_tasks():
+    if os.path.exists(TASKS_FILE):
+        with open(TASKS_FILE, 'r') as f:
+            return [Task.from_dict(task) for task in json.load(f)]
+    return []
+
+def save_tasks(tasks):
+    with open(TASKS_FILE, 'w') as f:
+        json.dump([task.to_dict() for task in tasks], f)
+
+def add_task(description, priority):
+    tasks = load_tasks()
+    tasks.append(Task(description, priority))
+    save_tasks(tasks)
+
+def remove_task(index):
+    tasks = load_tasks()
+    if 0 <= index < len(tasks):
+        tasks.pop(index)
+        save_tasks(tasks)
+
+def mark_task_completed(index):
+    tasks = load_tasks()
+    if 0 <= index < len(tasks):
+        tasks[index].completed = True
+        save_tasks(tasks)
+
+def list_tasks():
+    tasks = load_tasks()
+    for i, task in enumerate(tasks):
+        status = 'Done' if task.completed else 'Pending'
+        print(f"{i + 1}. [{status}] {task.description} (Priority: {task.priority})")
+
+def main():
+    while True:
+        print("\nTo-Do List Application")
+        print("1. Add task")
+        print("2. Remove task")
+        print("3. Mark task as completed")
+        print("4. List tasks")
+        print("5. Exit")
+        choice = input("Choose an option: ")
+
+        if choice == '1':
+            description = input("Enter task description: ")
+            priority = input("Enter task priority (low/medium/high): ")
+            add_task(description, priority)
+        elif choice == '2':
+            list_tasks()
+            index = int(input("Enter task number to remove: ")) - 1
+            remove_task(index)
+        elif choice == '3':
+            list_tasks()
+            index = int(input("Enter task number to mark as completed: ")) - 1
+            mark_task_completed(index)
+        elif choice == '4':
+            list_tasks()
+        elif choice == '5':
+            break
+        else:
+            print("Invalid option. Please try again.")
+
+if  __name__== "_main_":
+    main()
